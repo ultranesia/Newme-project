@@ -475,7 +475,7 @@ const UserTest = () => {
                     <p className="text-gray-400 text-sm">Dijawab</p>
                   </div>
                   <div className="text-center p-4 bg-[#2a2a2a] rounded-lg">
-                    <p className="text-3xl font-bold text-yellow-400">{results.totalScore}</p>
+                    <p className="text-3xl font-bold text-yellow-400">{results.totalScore || 0}</p>
                     <p className="text-gray-400 text-sm">Total Skor</p>
                   </div>
                 </div>
