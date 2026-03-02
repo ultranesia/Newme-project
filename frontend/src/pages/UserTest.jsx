@@ -481,7 +481,7 @@ const UserTest = () => {
                 </div>
                 
                 {/* Category Scores */}
-                {Object.keys(results.categories).length > 0 && (
+                {results.categories && Object.keys(results.categories).length > 0 && (
                   <div className="mt-4">
                     <p className="text-gray-400 text-sm mb-2">Skor per Kategori:</p>
                     <div className="space-y-2">
