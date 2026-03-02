@@ -16,7 +16,7 @@ async def seed_admin():
     db = client[db_name]
     
     # Check if admin already exists
-    existing_admin = await db.admins.find_one({"email": "admin@newme.com"})
+    existing_admin = await db.admin_users.find_one({"email": "admin@newme.com"})
     
     if existing_admin:
         print("✅ Admin sudah ada di database")
@@ -34,7 +34,7 @@ async def seed_admin():
         "lastLogin": None
     }
     
-    result = await db.admins.insert_one(admin_data)
+    result = await db.admin_users.insert_one(admin_data)
     print(f"✅ Admin berhasil dibuat dengan ID: {result.inserted_id}")
     print(f"   Email: admin@newme.com")
     print(f"   Password: admin123")
