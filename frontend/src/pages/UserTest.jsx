@@ -235,6 +235,8 @@ const UserTest = () => {
     const result = {
       answeredCount: Object.keys(answers).length,
       totalQuestions: questions.length,
+      totalScore: 0,
+      categories: {},
       testType,
       completedAt: new Date().toISOString()
     };
