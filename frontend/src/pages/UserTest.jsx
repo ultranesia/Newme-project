@@ -616,7 +616,7 @@ const UserTest = () => {
               ) : (
                 <Button
                   onClick={nextQuestion}
-                  disabled={!currentAnswer}
+                  disabled={currentAnswer === null || currentAnswer === undefined}
                   className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black"
                 >
                   Selanjutnya <ArrowRight className="w-4 h-4 ml-2" />
