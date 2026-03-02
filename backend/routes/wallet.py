@@ -1,0 +1,231 @@
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel
+from typing import Optional
+from database import get_db
+from datetime import datetime
+from bson import ObjectId
+import hashlib
+import os
+
+router = APIRouter(prefix="/api/wallet", tags=["wallet"])
+db = get_db()
+
+class TopUpRequest(BaseModel):
+    amount: int
+    userId: str
+
+class PaymentRequest(BaseModel):
+    userId: str
+    amount: int
+    description: str
+    paymentType: str = "test_payment"
+
+# Get wallet balance
+@router.get("/balance/{user_id}")
+async def get_wallet_balance(user_id: str):
+    try:
+        wallet = await db.wallets.find_one({"userId": user_id})
+        if not wallet:
+            # Create wallet if not exists
+            wallet = {
+                "userId": user_id,
+                "balance": 0,
+                "createdAt": datetime.utcnow(),
+                "updatedAt": datetime.utcnow()
+            }
+            await db.wallets.insert_one(wallet)
+            wallet["_id"] = str(wallet.get("_id", ""))
+        else:
+            wallet["_id"] = str(wallet["_id"])
+        
+        return {"balance": wallet.get("balance", 0), "userId": user_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Get transaction history
+@router.get("/transactions/{user_id}")
+async def get_transactions(user_id: str, limit: int = 20):
+    try:
+        transactions = await db.wallet_transactions.find(
+            {"userId": user_id}
+        ).sort("createdAt", -1).limit(limit).to_list(limit)
+        
+        for t in transactions:
+            t["_id"] = str(t["_id"])
+        
+        return transactions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Create top-up (manual/proof based)
+@router.post("/topup")
+async def create_topup(request: TopUpRequest):
+    try:
+        order_id = f"TOPUP-{request.userId[:8]}-{int(datetime.utcnow().timestamp())}"
+        user = await db.users.find_one({"_id": ObjectId(request.userId)})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Save pending transaction
+        transaction = {
+            "userId": request.userId,
+            "orderId": order_id,
+            "amount": request.amount,
+            "type": "topup",
+            "status": "pending",
+            "paymentMethod": "manual",
+            "createdAt": datetime.utcnow()
+        }
+        await db.wallet_transactions.insert_one(transaction)
+
+        return {
+            "orderId": order_id,
+            "amount": request.amount,
+            "status": "pending",
+            "message": "Top-up sedang diproses. Hubungi admin untuk konfirmasi."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Check payment status
+@router.get("/check-status/{order_id}")
+async def check_payment_status(order_id: str):
+    try:
+        transaction = await db.wallet_transactions.find_one({"orderId": order_id})
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        return {
+            "orderId": order_id,
+            "status": transaction.get("status", "pending"),
+            "amount": transaction.get("amount", 0)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Notification handler (PayDisini callback)
+@router.post("/notification")
+async def handle_notification(request: Request):
+    try:
+        data = await request.json()
+        order_id = data.get("order_id") or data.get("unique_code")
+        status = data.get("status", "pending")
+
+        if order_id:
+            if status == "Success":
+                transaction = await db.wallet_transactions.find_one({"orderId": order_id})
+                if transaction and transaction.get("status") == "pending":
+                    await db.wallet_transactions.update_one(
+                        {"orderId": order_id},
+                        {"$set": {"status": "success", "updatedAt": datetime.utcnow()}}
+                    )
+                    await db.wallets.update_one(
+                        {"userId": transaction["userId"]},
+                        {"$inc": {"balance": transaction["amount"]}, "$set": {"updatedAt": datetime.utcnow()}},
+                        upsert=True
+                    )
+
+        return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Pay for test using wallet balance
+@router.post("/pay-test")
+async def pay_for_test(request: PaymentRequest):
+    try:
+        # Check wallet balance
+        wallet = await db.wallets.find_one({"userId": request.userId})
+        current_balance = wallet.get("balance", 0) if wallet else 0
+        
+        if current_balance < request.amount:
+            raise HTTPException(status_code=400, detail="Saldo tidak mencukupi")
+        
+        # Deduct balance
+        await db.wallets.update_one(
+            {"userId": request.userId},
+            {
+                "$inc": {"balance": -request.amount},
+                "$set": {"updatedAt": datetime.utcnow()}
+            }
+        )
+        
+        # Record transaction
+        transaction = {
+            "userId": request.userId,
+            "orderId": f"PAY-{request.userId[:8]}-{int(datetime.utcnow().timestamp())}",
+            "amount": -request.amount,
+            "type": "payment",
+            "description": request.description,
+            "paymentType": request.paymentType,
+            "status": "success",
+            "createdAt": datetime.utcnow()
+        }
+        await db.wallet_transactions.insert_one(transaction)
+        
+        # Update user payment status for test access
+        await db.user_payments.update_one(
+            {"userId": request.userId},
+            {
+                "$set": {
+                    "status": "paid",
+                    "paidAt": datetime.utcnow(),
+                    "paymentMethod": "wallet",
+                    "amount": request.amount
+                }
+            },
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "Pembayaran berhasil",
+            "newBalance": current_balance - request.amount
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Manual top-up for demo (simulate successful payment)
+@router.post("/demo-topup")
+async def demo_topup(request: TopUpRequest):
+    """Demo top-up for testing without real Midtrans"""
+    try:
+        order_id = f"DEMO-{request.userId[:8]}-{int(datetime.utcnow().timestamp())}"
+        
+        # Record transaction
+        transaction = {
+            "userId": request.userId,
+            "orderId": order_id,
+            "amount": request.amount,
+            "type": "topup",
+            "status": "success",
+            "paymentMethod": "demo",
+            "createdAt": datetime.utcnow()
+        }
+        await db.wallet_transactions.insert_one(transaction)
+        
+        # Add balance
+        await db.wallets.update_one(
+            {"userId": request.userId},
+            {
+                "$inc": {"balance": request.amount},
+                "$set": {"updatedAt": datetime.utcnow()}
+            },
+            upsert=True
+        )
+        
+        # Get new balance
+        wallet = await db.wallets.find_one({"userId": request.userId})
+        
+        return {
+            "success": True,
+            "message": "Demo top-up berhasil",
+            "orderId": order_id,
+            "amount": request.amount,
+            "newBalance": wallet.get("balance", 0)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
