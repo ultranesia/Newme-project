@@ -470,6 +470,156 @@ export default function TestResult() {
         </div>
       </div>
 
+      {/* ── AI Insights Section (Premium Only) ── */}
+      {result.testType === 'paid' && analysis.aiInsights && (
+        <div className="max-w-4xl mx-auto mt-6 bg-white shadow-2xl rounded-xl overflow-hidden border-2 border-yellow-400">
+          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-4">
+            <h2 className="text-2xl font-black text-white flex items-center gap-3">
+              <span className="text-3xl">🤖</span>
+              Analisis AI Personal - Khusus Premium
+            </h2>
+            <p className="text-white/90 text-sm mt-1">Insights mendalam berdasarkan 25 jawaban Anda</p>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Ringkasan Kepribadian */}
+            {analysis.aiInsights.ringkasanKepribadian && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-yellow-500">📝</span> Ringkasan Kepribadian Anda
+                </h3>
+                <p className="text-gray-700 leading-relaxed bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                  {analysis.aiInsights.ringkasanKepribadian}
+                </p>
+              </section>
+            )}
+
+            {/* Kekuatan Utama */}
+            {analysis.aiInsights.kekuatanUtama && analysis.aiInsights.kekuatanUtama.length > 0 && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-green-500">💪</span> Kekuatan Utama Anda
+                </h3>
+                <ul className="space-y-2">
+                  {analysis.aiInsights.kekuatanUtama.map((strength, i) => (
+                    <li key={i} className="flex items-start gap-3 bg-green-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        {i + 1}
+                      </span>
+                      <span className="text-gray-700">{strength}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* Areas Pengembangan Diri */}
+            {analysis.aiInsights.areasPengembanganDiri && analysis.aiInsights.areasPengembanganDiri.length > 0 && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-blue-500">🎯</span> Area Pengembangan Diri
+                </h3>
+                <ul className="space-y-2">
+                  {analysis.aiInsights.areasPengembanganDiri.map((area, i) => (
+                    <li key={i} className="flex items-start gap-3 bg-blue-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        {i + 1}
+                      </span>
+                      <span className="text-gray-700">{area}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {/* Rekomendasi Karir Spesifik */}
+            {analysis.aiInsights.rekomendasiKarirSpesifik && analysis.aiInsights.rekomendasiKarirSpesifik.length > 0 && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-purple-500">💼</span> Rekomendasi Karir Spesifik
+                </h3>
+                <div className="grid gap-4">
+                  {analysis.aiInsights.rekomendasiKarirSpesifik.map((career, i) => (
+                    <div key={i} className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                      <h4 className="font-bold text-purple-900 mb-2">{career.bidang}</h4>
+                      <p className="text-gray-700 text-sm mb-3">{career.alasan}</p>
+                      {career.roleContoh && career.roleContoh.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {career.roleContoh.map((role, j) => (
+                            <span key={j} className="bg-purple-200 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold">
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Strategi Pengembangan Diri */}
+            {analysis.aiInsights.strategiPengembanganDiri && analysis.aiInsights.strategiPengembanganDiri.length > 0 && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-orange-500">📋</span> Strategi Pengembangan Diri
+                </h3>
+                <div className="space-y-4">
+                  {analysis.aiInsights.strategiPengembanganDiri.map((strategy, i) => (
+                    <div key={i} className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                      <h4 className="font-bold text-orange-900 mb-2">{strategy.area}</h4>
+                      <ul className="space-y-1">
+                        {strategy.langkahKonkret.map((step, j) => (
+                          <li key={j} className="flex items-start gap-2 text-sm text-gray-700">
+                            <span className="text-orange-500 mt-0.5">→</span>
+                            <span>{step}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Tips Praktis */}
+            {analysis.aiInsights.tipsPraktis && analysis.aiInsights.tipsPraktis.length > 0 && (
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span className="text-yellow-500">💡</span> Tips Praktis Sehari-hari
+                </h3>
+                <div className="grid md:grid-cols-2 gap-3">
+                  {analysis.aiInsights.tipsPraktis.map((tip, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                      <span className="text-yellow-500 text-lg">✓</span>
+                      <span className="text-gray-700 text-sm">{tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Motivational Message */}
+            {analysis.aiInsights.motivationalMessage && (
+              <section className="bg-gradient-to-r from-yellow-100 to-orange-100 p-6 rounded-lg border-2 border-yellow-400">
+                <h3 className="text-lg font-bold text-gray-900 mb-3 text-center flex items-center justify-center gap-2">
+                  <span className="text-2xl">✨</span> Pesan Motivasi untuk Anda
+                </h3>
+                <p className="text-gray-800 text-center leading-relaxed italic text-lg">
+                  "{analysis.aiInsights.motivationalMessage}"
+                </p>
+              </section>
+            )}
+          </div>
+
+          <div className="bg-gray-50 px-6 py-4 border-t">
+            <p className="text-xs text-gray-500 text-center">
+              ✨ Analisis ini di-generate oleh AI berdasarkan jawaban unik Anda dan bukan template umum
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── Pesan untuk Free Test ── */}
       {result.testType === 'free' && (
         <div className="max-w-4xl mx-auto mt-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl p-6 print:hidden shadow-lg">
@@ -492,7 +642,13 @@ export default function TestResult() {
                 <span className="text-green-500">✓</span> Kompilasi Adaptasi untuk pengembangan diri
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span> Rekomendasi karir berdasarkan kepribadian
+                <span className="text-green-500">✓</span> Rekomendasi karir berdasarkan kepribadian dengan AI
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Strategi pengembangan diri konkret dengan AI
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-green-500">✓</span> Tips praktis sehari-hari personal
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-green-500">✓</span> Sertifikat resmi yang bisa di-download
@@ -501,7 +657,7 @@ export default function TestResult() {
             <Link to="/dashboard" className="inline-block px-8 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all text-sm mt-2">
               UPGRADE KE TEST PREMIUM →
             </Link>
-            <p className="text-xs text-gray-500">Hanya Rp 100.000 untuk analisis seumur hidup</p>
+            <p className="text-xs text-gray-500">Hanya Rp 50.000 untuk analisis AI seumur hidup</p>
           </div>
         </div>
       )}
