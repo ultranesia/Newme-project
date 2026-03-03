@@ -29,7 +29,8 @@ class CategoryScore(BaseModel):
 async def save_test_result(submission: TestResultSubmission):
     """Save test results after user completes a test"""
     import uuid
-    from ai_personality_analysis import enhance_analysis_with_ai
+    import sys
+    sys.path.insert(0, '/app/backend')
     
     try:
         # Generate basic analysis based on answers
@@ -46,17 +47,20 @@ async def save_test_result(submission: TestResultSubmission):
             except:
                 pass
         
-        # Enhance with AI analysis (for paid tests or if enabled)
+        # Enhance with AI analysis (for paid tests only)
+        analysis = basic_analysis  # Default to basic
         if submission.testType == "paid":
-            analysis = await enhance_analysis_with_ai(
-                answers=submission.answers,
-                questions_data=questions_data,
-                basic_analysis=basic_analysis,
-                test_type=submission.testType
-            )
-        else:
-            # Free test gets basic analysis only
-            analysis = basic_analysis
+            try:
+                from ai_personality_analysis import enhance_analysis_with_ai
+                analysis = await enhance_analysis_with_ai(
+                    answers=submission.answers,
+                    questions_data=questions_data,
+                    basic_analysis=basic_analysis,
+                    test_type=submission.testType
+                )
+            except Exception as e:
+                print(f"AI analysis error (falling back to basic): {e}")
+                analysis = basic_analysis
         
         # Create unique result identifier to ensure no duplicates
         unique_result_id = f"{submission.userId}_{submission.testType}_{uuid.uuid4().hex[:8]}"
