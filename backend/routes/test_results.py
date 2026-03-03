@@ -29,9 +29,34 @@ class CategoryScore(BaseModel):
 async def save_test_result(submission: TestResultSubmission):
     """Save test results after user completes a test"""
     import uuid
+    from ai_personality_analysis import enhance_analysis_with_ai
+    
     try:
-        # Generate analysis based on answers
-        analysis = await generate_test_analysis(submission.answers, submission.testType)
+        # Generate basic analysis based on answers
+        basic_analysis = await generate_test_analysis(submission.answers, submission.testType)
+        
+        # Get all questions for AI context
+        questions_data = []
+        for q_id in submission.answers.keys():
+            try:
+                question = await db.questions.find_one({"_id": ObjectId(q_id)})
+                if question:
+                    question['_id'] = str(question['_id'])  # Convert to string
+                    questions_data.append(question)
+            except:
+                pass
+        
+        # Enhance with AI analysis (for paid tests or if enabled)
+        if submission.testType == "paid":
+            analysis = await enhance_analysis_with_ai(
+                answers=submission.answers,
+                questions_data=questions_data,
+                basic_analysis=basic_analysis,
+                test_type=submission.testType
+            )
+        else:
+            # Free test gets basic analysis only
+            analysis = basic_analysis
         
         # Create unique result identifier to ensure no duplicates
         unique_result_id = f"{submission.userId}_{submission.testType}_{uuid.uuid4().hex[:8]}"
@@ -46,8 +71,8 @@ async def save_test_result(submission: TestResultSubmission):
             "totalQuestions": submission.results.get("totalQuestions", 0),
             "answers": submission.answers,
             "analysis": analysis,
-            "dominantElement": analysis.get("dominant_element", ""),
-            "personalityType": analysis.get("personality_type", ""),
+            "dominantElement": analysis.get("dominantElement", ""),
+            "personalityType": analysis.get("personalityType", ""),
             "completedAt": datetime.utcnow(),
             "createdAt": datetime.utcnow()
         }
