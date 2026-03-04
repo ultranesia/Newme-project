@@ -375,6 +375,11 @@ export default function TestResult() {
               <p className="text-base font-black" style={{ color: elemColor }}>
                 {insights.personalityLabel || analysis.personalityType || 'AMBIVERT'}
               </p>
+              {analysis.numerology && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Numerologi: {analysis.numerology.number}
+                </p>
+              )}
             </section>
 
             {/* Simbol Jatidiri - BLUR for free */}
