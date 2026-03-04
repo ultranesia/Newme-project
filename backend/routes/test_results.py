@@ -33,8 +33,16 @@ async def save_test_result(submission: TestResultSubmission):
     sys.path.insert(0, '/app/backend')
     
     try:
-        # Generate basic analysis based on answers
-        basic_analysis = await generate_test_analysis(submission.answers, submission.testType)
+        # Get user data for birthdate
+        user = await db.users.find_one({"_id": ObjectId(submission.userId)})
+        birthdate = user.get("birthDate") if user else None
+        
+        # Generate basic analysis based on answers AND birthdate
+        basic_analysis = await generate_test_analysis(
+            answers=submission.answers, 
+            test_type=submission.testType,
+            birthdate=birthdate
+        )
         
         # Get all questions for AI context
         questions_data = []
