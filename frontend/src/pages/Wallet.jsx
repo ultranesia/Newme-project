@@ -113,43 +113,7 @@ const Wallet = () => {
     }
   };
 
-  const handleDemoTopup = async () => {
-    const amount = parseInt(topupAmount);
-    if (!amount || amount < 10000) {
-      toast({
-        title: 'Error',
-        description: 'Minimal top-up Rp 10.000',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      setProcessingTopup(true);
-      const response = await axios.post(`${BACKEND_URL}/api/wallet/demo-topup`, {
-        userId: user.id || user._id,
-        amount: amount
-      });
-      
-      setBalance(response.data.newBalance);
-      toast({
-        title: 'Top-up Berhasil!',
-        description: `Saldo bertambah Rp ${amount.toLocaleString('id-ID')}`
-      });
-      setShowTopup(false);
-      setTopupAmount('');
-      setQrData(null);
-      loadWalletData(user.id || user._id);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: getErrorMsg(error, 'Gagal top-up'),
-        variant: 'destructive'
-      });
-    } finally {
-      setProcessingTopup(false);
-    }
-  };
+ 
 
   const checkPaymentStatus = async () => {
     if (!qrData?.orderId) return;
