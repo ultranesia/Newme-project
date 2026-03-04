@@ -482,31 +482,6 @@ export default function TestResult() {
           </div>
 
           <div className="p-6 space-y-6">
-            {/* Numerology Result (NO FORMULA - PREMIUM ONLY) */}
-            {analysis.numerology && (
-              <section className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-400">
-                <h3 className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-2">
-                  <span className="text-lg">🔢</span> Angka Jatidiri Anda
-                </h3>
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-4xl font-black text-white">{analysis.numerology.number}</span>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-700 mb-1">
-                      Berdasarkan tanggal lahir Anda
-                    </p>
-                    <p className="text-lg font-bold text-purple-800">
-                      {analysis.personalityType} - {analysis.dominantElement?.toUpperCase()}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1 italic">
-                      Angka jatidiri menentukan kepribadian dasar Anda
-                    </p>
-                  </div>
-                </div>
-              </section>
-            )}
-
             {/* Ringkasan Kepribadian */}
             {analysis.aiInsights.ringkasanKepribadian && (
               <section>
