@@ -71,16 +71,20 @@ export default function YayasanDashboard() {
 
   const loadAll = async () => {
     try {
-      const [statsRes, usersRes, resultsRes, walletRes] = await Promise.allSettled([
+      const [statsRes, usersRes, resultsRes, walletRes, settingsRes] = await Promise.allSettled([
         axios.get(`${API_URL}/api/yayasan/dashboard/stats`, { headers: headers() }),
         axios.get(`${API_URL}/api/yayasan/users`, { headers: headers() }),
         axios.get(`${API_URL}/api/yayasan/test-results`, { headers: headers() }),
         axios.get(`${API_URL}/api/yayasan/wallet`, { headers: headers() }),
+        axios.get(`${API_URL}/api/settings/general`),
       ]);
       if (statsRes.status === 'fulfilled') setStats(statsRes.value.data);
       if (usersRes.status === 'fulfilled') setUsers(usersRes.value.data);
       if (resultsRes.status === 'fulfilled') setTestResults(resultsRes.value.data);
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value.data);
+      if (settingsRes.status === 'fulfilled') {
+        setBasePrice(settingsRes.value.data?.testPriceSettings?.basePrice || 199000);
+      }
     } catch (e) { console.error(e); }
   };
 
