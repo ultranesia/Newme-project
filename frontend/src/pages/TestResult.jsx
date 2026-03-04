@@ -450,10 +450,22 @@ export default function TestResult() {
 
         {/* ── FOOTER ── */}
         <div className="flex items-end justify-between px-5 py-4 border-t-2" style={{ borderColor: '#d4af37' }}>
-          <div>
-            <div className="w-24 border-b-2 border-gray-800 mb-1" />
-            <p className="text-xs font-bold text-gray-800">ABIE DIBYO</p>
-            <p className="text-xs text-gray-500">Chairman & B. Development</p>
+          <div className="flex items-end gap-3">
+            {/* QR Code Signature - Premium Only */}
+            {result.testType === 'paid' && (
+              <div className="flex-shrink-0">
+                <img 
+                  src="/signature-qr.jpg" 
+                  alt="Signature QR" 
+                  className="w-16 h-16 object-contain"
+                />
+              </div>
+            )}
+            <div>
+              <div className="w-24 border-b-2 border-gray-800 mb-1" />
+              <p className="text-xs font-bold text-gray-800">ABIE DIBYO</p>
+              <p className="text-xs text-gray-500">Chairman & B. Development</p>
+            </div>
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-400">
