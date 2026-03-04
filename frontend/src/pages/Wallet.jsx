@@ -327,7 +327,6 @@ const Wallet = () => {
               {/* Action buttons */}
               <div className="flex gap-3">
                 {!qrData ? (
-                  <>
                     <Button 
                       onClick={handleTopup}
                       disabled={processingTopup || !topupAmount}
@@ -335,14 +334,6 @@ const Wallet = () => {
                     >
                       {processingTopup ? 'Memproses...' : 'Buat QR Code QRIS'}
                     </Button>
-                    <Button 
-                      onClick={handleDemoTopup}
-                      disabled={processingTopup || !topupAmount}
-                      className="flex-1 bg-green-600 text-white hover:bg-green-700"
-                    >
-                      {processingTopup ? 'Memproses...' : 'Demo Top-up (Instant)'}
-                    </Button>
-                  </>
                 ) : (
                   <Button 
                     onClick={() => {
