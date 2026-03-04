@@ -375,7 +375,8 @@ export default function TestResult() {
               <p className="text-base font-black" style={{ color: elemColor }}>
                 {insights.personalityLabel || analysis.personalityType || 'AMBIVERT'}
               </p>
-              {analysis.numerology && (
+              {/* Numerology number only for PREMIUM */}
+              {result.testType === 'paid' && analysis.numerology && (
                 <p className="text-xs text-gray-500 mt-1">
                   Numerologi: {analysis.numerology.number}
                 </p>
