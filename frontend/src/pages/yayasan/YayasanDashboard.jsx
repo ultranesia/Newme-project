@@ -40,6 +40,7 @@ export default function YayasanDashboard() {
   // Price editing
   const [editingPrice, setEditingPrice] = useState(false);
   const [newPrice, setNewPrice] = useState(100000);
+  const [basePrice, setBasePrice] = useState(199000);
   const [savingPrice, setSavingPrice] = useState(false);
 
   // Users filter
