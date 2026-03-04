@@ -95,9 +95,23 @@ export default function YayasanDashboard() {
   };
 
   const handleUpdatePrice = async () => {
-    if (!newPrice || newPrice < 10000) {
-      toast({ title: 'Error', description: 'Harga minimal Rp 10.000', variant: 'destructive' }); return;
+    // Get base price from admin settings
+    try {
+      const settingsRes = await axios.get(`${API_URL}/api/settings/general`);
+      const basePrice = settingsRes.data?.testPriceSettings?.basePrice || 199000;
+      
+      if (!newPrice || newPrice < basePrice) {
+        toast({ 
+          title: 'Error', 
+          description: `Harga tidak boleh kurang dari harga admin (${fmt(basePrice)})`, 
+          variant: 'destructive' 
+        }); 
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to get base price:', e);
     }
+    
     setSavingPrice(true);
     try {
       await axios.put(`${API_URL}/api/yayasan/referral-price`, { referralPrice: Number(newPrice) }, { headers: headers() });
