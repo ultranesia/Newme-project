@@ -451,9 +451,9 @@ export default function YayasanDashboard() {
                     <Label className="text-gray-400 text-sm">Harga (Rp)</Label>
                     {editingPrice ? (
                       <Input type="number" value={newPrice} onChange={e => setNewPrice(Number(e.target.value))}
-                        min={10000} className="bg-[#1a1a1a] text-white border-yellow-400/50 mt-1" />
+                        min={basePrice} className="bg-[#1a1a1a] text-white border-yellow-400/50 mt-1" />
                     ) : (
-                      <p className="text-3xl font-bold text-yellow-400 mt-1">{fmt(yayasan?.referralPrice || 100000)}</p>
+                      <p className="text-3xl font-bold text-yellow-400 mt-1">{fmt(yayasan?.referralPrice || basePrice)}</p>
                     )}
                   </div>
                   {editingPrice ? (
@@ -471,7 +471,7 @@ export default function YayasanDashboard() {
                 </div>
                 <div className="bg-yellow-400/10 rounded-lg p-3">
                   <p className="text-yellow-400 text-xs">
-                    Harga default platform: <strong>Rp 100.000</strong>. Anda bisa menetapkan harga berbeda untuk pengguna referral Yayasan Anda.
+                    Harga platform: <strong>{fmt(basePrice)}</strong>. Anda bisa menetapkan harga lebih tinggi (tidak boleh kurang) untuk pengguna referral Yayasan Anda.
                   </p>
                 </div>
               </CardContent>
