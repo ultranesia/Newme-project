@@ -102,13 +102,31 @@ async def save_test_result(submission: TestResultSubmission):
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
-async def generate_test_analysis(answers: dict, test_type: str) -> dict:
+async def generate_test_analysis(answers: dict, test_type: str, birthdate: str = None) -> dict:
     """
-    Generate personality analysis based on answers.
+    Generate personality analysis based on answers AND birthdate numerology.
+    
+    Personality type & dominant element determined by BIRTHDATE numerology.
+    Interests, talents, and other dimensions determined by TEST ANSWERS.
+    
     answers format: {questionId: optionIndex}  (index 0-based)
     Questions use 'scores' dict: {"extrovert": 5, "api": 3, ...}
     """
-    # Dimension accumulators
+    from numerology_calculator import calculate_numerology_from_birthdate
+    
+    # ── Calculate personality + element from BIRTHDATE ──
+    numerology_result = calculate_numerology_from_birthdate(birthdate) if birthdate else {
+        "numerology_number": 5,
+        "personality_type": "Introvert",
+        "element": "api",
+        "calculation_steps": "No birthdate provided"
+    }
+    
+    personality_type = numerology_result["personality_type"]
+    dominant_element = numerology_result["element"]
+    numerology_number = numerology_result["numerology_number"]
+    
+    # ── Dimension accumulators from ANSWERS ──
     dims = {}
 
     for question_id, option_index in answers.items():
@@ -143,26 +161,21 @@ async def generate_test_analysis(answers: dict, test_type: str) -> dict:
             print(f"Error processing answer {question_id}: {e}")
             continue
 
-    # ── Dominant element (5 Elemen) ──
+    # ── Element scores (for display, but dominant is from birthdate) ──
     elements = {k: dims.get(k, 0) for k in ["kayu", "api", "tanah", "logam", "air"]}
-    dominant_element = max(elements, key=elements.get)
+    # Boost the birthdate-determined element slightly for consistency
+    if dominant_element in elements:
+        elements[dominant_element] = elements.get(dominant_element, 0) + 10
 
-    # ── Personality type (introvert vs extrovert) ──
-    intro = dims.get("introvert", 0)
-    extro = dims.get("extrovert", 0)
-    personality_type = "Introvert" if intro >= extro else "Extrovert"
-    if abs(intro - extro) < 5:
-        personality_type = "Ambivert"
-
-    # ── Dominant interest ──
+    # ── Dominant interest (from answers) ──
     interest_keys = ["analitik", "sosial", "praktis", "artistik", "enterprising", "investigatif"]
     interests = {k: dims.get(k, 0) for k in interest_keys}
-    dominant_interest = max(interests, key=interests.get)
+    dominant_interest = max(interests, key=interests.get) if interests else "analitik"
 
-    # ── Dominant talent ──
+    # ── Dominant talent (from answers) ──
     talent_keys = ["komunikasi", "empati", "kinestetik", "logika", "musikal", "visual"]
     talents = {k: dims.get(k, 0) for k in talent_keys}
-    dominant_talent = max(talents, key=talents.get)
+    dominant_talent = max(talents, key=talents.get) if talents else "komunikasi"
 
     # ── Build rich insights ──
     insights = build_insights(dominant_element, personality_type, dominant_interest, dominant_talent, dims)
@@ -178,6 +191,11 @@ async def generate_test_analysis(answers: dict, test_type: str) -> dict:
         "allDimensions": {k: round(v, 1) for k, v in dims.items()},
         "insights": insights,
         "testType": test_type,
+        "numerology": {
+            "number": numerology_number,
+            "calculation": numerology_result.get("calculation_steps", ""),
+            "birthdate": birthdate
+        },
         # backward compat
         "dominant_element": dominant_element,
         "personality_type": personality_type,
